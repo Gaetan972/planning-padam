@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Planning Padam – HTML/JS</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header>
+    <h1>Planning Padam</h1>
+    <div class="muted">Choisis 1 ou 2 services par jour. Les horaires et durées se calculent automatiquement (y compris la nuit).</div>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <div style="overflow:auto; border-radius:14px 14px 0 0">
+        <table id="planning">
+          <thead>
+  <tr>
+    <th>Jour</th>
+    <th class="hide-sm">n du jour</th>
+    <th>Service 1</th>
+    <th>Service 2</th>
+    <th>Horaire(s)</th>
+    <th class="hide-sm">Durée 2</th>
+    <th>Km S1</th>
+    <th>Km S2</th>
+    <th>Km (total)</th>
+    <th class="right">Durée (total)</th>
+  </tr>
+</thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="footer">
+  <div class="stack">
+    <button class="btn secondary" id="btn-reset" title="Effacer la semaine">Réinitialiser</button>
+    <button class="btn secondary" id="btn-export" title="Exporter au format CSV">Exporter CSV</button>
+  </div>
+  <div class="stack">
+    <div class="badge">Total semaine : <span id="totalWeek">0:00</span></div>
+    <div class="badge">Total km semaine : <span id="totalKmWeek">0</span> km</div>
+  </div>
+</div>
+    </div>
+  </div>
+
+
+</body>
+</html>
