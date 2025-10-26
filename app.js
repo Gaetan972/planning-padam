@@ -53,13 +53,20 @@ const DAYS = [
 
 // --- Utilitaires temps ---
 const toMinutes = hhmm => {
-  if(!hhmm) return null; const [h,m] = hhmm.split(":").map(Number); return h*60+m;
+  if(!hhmm) return null;
+  const [h,m] = hhmm.split(":").map(Number);
+  return h*60+m;
 };
 const formatHHMM = minutes => {
-  if(minutes==null) return ""; const h=Math.floor(minutes/60); const m=minutes%60; return `${h}:${String(m).padStart(2,'0')}`;
+  if(minutes==null) return "";
+  const h=Math.floor(minutes/60);
+  const m=minutes%60;
+  return `${h}:${String(m).padStart(2,'0')}`;
 };
 const durationMinutes = (start, end) => {
-  if(!start || !end) return 0; const s=toMinutes(start), e=toMinutes(end); return ((e - s + 1440) % 1440);
+  if(!start || !end) return 0;
+  const s=toMinutes(start), e=toMinutes(end);
+  return ((e - s + 1440) % 1440); // gère la nuit
 };
 const rangeLabel = (start, end) => (start && end ? `${start} – ${end}` : "");
 
@@ -69,7 +76,8 @@ const totalWeekEl = document.getElementById('totalWeek');
 const totalKmWeekEl = document.getElementById('totalKmWeek');
 
 const load = () => {
-  try { return JSON.parse(localStorage.getItem('padam-week')) || {}; } catch { return {}; }
+  try { return JSON.parse(localStorage.getItem('padam-week')) || {}; }
+  catch { return {}; }
 };
 const save = (state) => localStorage.setItem('padam-week', JSON.stringify(state));
 
@@ -77,14 +85,23 @@ let state = load();
 
 function makeSelect(value, onChange){
   const sel = document.createElement('select');
-  const optNone = document.createElement('option'); optNone.value=""; optNone.textContent='—'; sel.appendChild(optNone);
+  const optNone = document.createElement('option');
+  optNone.value=""; optNone.textContent='—';
+  sel.appendChild(optNone);
+
   for(const s of SERVICES){
-    const o = document.createElement('option'); o.value=s.code; o.textContent=s.code; sel.appendChild(o);
+    const o = document.createElement('option');
+    o.value=s.code; o.textContent=s.code;
+    sel.appendChild(o);
   }
+
   sel.value = value || "";
   sel.addEventListener('change', e=> onChange(e.target.value));
   return sel;
 }
+
+// pour le mode "carte" mobile : ajoute un label au td
+function label(td, text){ td.dataset.label = text; return td; }
 
 function render(){
   tbody.innerHTML = '';
@@ -93,9 +110,11 @@ function render(){
 
   DAYS.forEach((d, idx) => {
     const key = String(idx);
-    const rowState = state[key] || { service1: '', service2: '', nJour:d.nJour, km1: 0, km2: 0 };
+    const rowState = state[key] || {
+      service1: '', service2: '', nJour: d.nJour, km1: 0, km2: 0
+    };
 
-    const s1 = SERVICE_MAP[rowState.service1] || {}; 
+    const s1 = SERVICE_MAP[rowState.service1] || {};
     const s2 = SERVICE_MAP[rowState.service2] || {};
 
     const label1 = rangeLabel(s1.start, s1.end);
@@ -104,19 +123,21 @@ function render(){
 
     const d1 = durationMinutes(s1.start, s1.end);
     const d2 = durationMinutes(s2.start, s2.end);
-    const total = d1 + d2; totalWeek += total;
+    const total = d1 + d2;
+    totalWeek += total;
 
     const tr = document.createElement('tr');
 
     // Jour + n du jour
-    const tdDay = document.createElement('td');
+    const tdDay = label(document.createElement('td'), 'Jour');
     const head = document.createElement('div'); head.className='row-head';
     const title = document.createElement('strong'); title.textContent=d.day; head.appendChild(title);
     const sub = document.createElement('span'); sub.className='sub'; sub.textContent = rowState.nJour ?? ''; head.appendChild(sub);
     tdDay.appendChild(head);
 
-    const tdN = document.createElement('td'); tdN.className='hide-sm';
-    const nInput = document.createElement('input'); nInput.type='number'; nInput.value=rowState.nJour ?? '';
+    const tdN = label(document.createElement('td'), 'n du jour'); tdN.className='hide-sm';
+    const nInput = document.createElement('input'); nInput.type='number';
+    nInput.value=rowState.nJour ?? '';
     nInput.addEventListener('input', e=>{
       state[key] = { ...rowState, nJour: e.target.value ? Number(e.target.value) : '' };
       save(state);
@@ -124,60 +145,66 @@ function render(){
     tdN.appendChild(nInput);
 
     // Service 1 & 2
-    const tdS1 = document.createElement('td');
+    const tdS1 = label(document.createElement('td'), 'Service 1');
     tdS1.appendChild(makeSelect(rowState.service1, v=>{
       state[key] = { ...rowState, service1:v };
       save(state); render();
     }));
-    const tdS2 = document.createElement('td');
+
+    const tdS2 = label(document.createElement('td'), 'Service 2');
     tdS2.appendChild(makeSelect(rowState.service2, v=>{
       state[key] = { ...rowState, service2:v };
       save(state); render();
     }));
 
     // Horaires
-    const tdH = document.createElement('td'); tdH.textContent = horaires;
+    const tdH = label(document.createElement('td'), 'Horaire(s)');
+    tdH.textContent = horaires;
 
     // Durée 2
-    const tdD2 = document.createElement('td'); tdD2.className='hide-sm'; tdD2.textContent = formatHHMM(d2);
+    const tdD2 = label(document.createElement('td'), 'Durée 2'); tdD2.className='hide-sm';
+    tdD2.textContent = formatHHMM(d2);
 
     // KM S1
-    const tdKm1 = document.createElement('td');
+    const tdKm1 = label(document.createElement('td'), 'Km S1');
     const km1Input = document.createElement('input');
     km1Input.type = 'number'; km1Input.min = '0'; km1Input.step = '0.1';
     km1Input.placeholder = '0'; km1Input.value = rowState.km1 ?? 0;
-    km1Input.addEventListener('input', e=>{
+    km1Input.setAttribute('inputmode','numeric'); // mobile keypad
+    km1Input.addEventListener('input', e => {
       const v = e.target.value;
       state[key] = { ...rowState, km1: v === '' ? 0 : Number(v) };
-      save(state); 
-      // on ne rerend pas à chaque frappe pour fluide, mais on pourrait:
-      // render();
+      save(state);
+      // pas de render() à chaque frappe pour fluidité
     });
     tdKm1.appendChild(km1Input);
 
     // KM S2
-    const tdKm2 = document.createElement('td');
+    const tdKm2 = label(document.createElement('td'), 'Km S2');
     const km2Input = document.createElement('input');
     km2Input.type = 'number'; km2Input.min = '0'; km2Input.step = '0.1';
     km2Input.placeholder = '0'; km2Input.value = rowState.km2 ?? 0;
-    km2Input.addEventListener('input', e=>{
+    km2Input.setAttribute('inputmode','numeric');
+    km2Input.addEventListener('input', e => {
       const v = e.target.value;
       state[key] = { ...rowState, km2: v === '' ? 0 : Number(v) };
       save(state);
-      // render();
     });
     tdKm2.appendChild(km2Input);
 
     // Km total (ligne)
     const kmTotal = (rowState.km1 || 0) + (rowState.km2 || 0);
     totalKmWeek += kmTotal;
-    const tdKmTot = document.createElement('td'); tdKmTot.textContent = kmTotal.toFixed(1);
+    const tdKmTot = label(document.createElement('td'), 'Km (total)');
+    tdKmTot.textContent = kmTotal.toFixed(1);
 
     // Durée totale
-    const tdT = document.createElement('td'); tdT.className='right'; tdT.textContent = formatHHMM(total);
+    const tdT = label(document.createElement('td'), 'Durée (total)');
+    tdT.className='right';
+    tdT.textContent = formatHHMM(total);
 
-    [tdDay, tdN, tdS1, tdS2, tdH, tdD2, tdKm1, tdKm2, tdKmTot, tdT].forEach(td=> tr.appendChild(td));
-    tbody.appendChild(tr);
+    [tdDay, tdN, tdS1, tdS2, tdH, tdD2, tdKm1, tdKm2, tdKmTot, tdT].forEach(td => tr.appendChild(td));
+    tbody.appendChild(tr); // <<< on ajoute la ligne au tableau
   });
 
   totalWeekEl.textContent = formatHHMM(totalWeek);
@@ -188,35 +215,50 @@ render();
 
 // --- Actions ---
 document.getElementById('btn-reset').addEventListener('click', ()=>{
-  if(confirm('Réinitialiser la semaine ?')){ state = {}; save(state); render(); }
+  if(confirm('Réinitialiser la semaine ?')){
+    state = {};
+    save(state);
+    render();
+  }
 });
 
 // Export CSV
 function toCSV(){
   const header = ['Jour','n du jour','Service 1','Service 2','Horaire(s)','Durée 2','Km S1','Km S2','Km (total)','Durée (total)'];
   const rows = [header];
+
   DAYS.forEach((d, idx)=>{
     const key = String(idx);
     const r = state[key] || {};
-    const s1 = SERVICE_MAP[r.service1]||{};
-    const s2 = SERVICE_MAP[r.service2]||{};
+    const s1 = SERVICE_MAP[r.service1] || {};
+    const s2 = SERVICE_MAP[r.service2] || {};
+
     const d2 = durationMinutes(s2.start, s2.end);
     const total = durationMinutes(s1.start, s1.end) + d2;
-    const horaires = [rangeLabel(s1.start,s1.end), rangeLabel(s2.start,s2.end)].filter(Boolean).join(' / ');
-    const km1 = r.km1 || 0; const km2 = r.km2 || 0; const kmTot = km1 + km2;
+    const horaires = [rangeLabel(s1.start, s1.end), rangeLabel(s2.start, s2.end)]
+      .filter(Boolean).join(' / ');
+
+    const km1 = r.km1 || 0;
+    const km2 = r.km2 || 0;
+    const kmTot = km1 + km2;
 
     rows.push([
       d.day, r.nJour ?? '', r.service1 || '', r.service2 || '',
       horaires, formatHHMM(d2), km1, km2, kmTot, formatHHMM(total)
     ]);
   });
-  return rows.map(r=> r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\n');
+
+  return rows
+    .map(r => r.map(v => `"${String(v).replaceAll('"','""')}"`).join(','))
+    .join('\n');
 }
 
 document.getElementById('btn-export').addEventListener('click', ()=>{
   const blob = new Blob([toCSV()], {type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href=url; a.download='planning_padam.csv'; a.click();
+  a.href = url;
+  a.download = 'planning_padam.csv';
+  a.click();
   URL.revokeObjectURL(url);
 });
