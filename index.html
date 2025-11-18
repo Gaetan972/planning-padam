@@ -12,6 +12,29 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <!-- Importation du SDK Firebase depuis le CDN -->
+<script type="module">
+  // Import du core Firebase et du service Firestore
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+
+  // Configuration Firebase de votre projet (remplacez par vos valeurs)
+  const firebaseConfig = {
+    apiKey: "VOTRE_API_KEY",
+    authDomain: "VOTRE_PROJET.firebaseapp.com",
+    projectId: "VOTRE_PROJET",
+    storageBucket: "VOTRE_PROJET.appspot.com",
+    messagingSenderId: "...",
+    appId: "..."
+  };
+
+  // Initialiser Firebase
+  const app = initializeApp(firebaseConfig);  // :contentReference[oaicite:9]{index=9}
+
+  // Initialiser la base de données Firestore
+  const db = getFirestore(app);
+</script>
+
 
   
 </head>
@@ -58,4 +81,5 @@
 
 </body>
 </html>
+
 
