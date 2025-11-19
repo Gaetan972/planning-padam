@@ -13,7 +13,15 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+ import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  limit
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyClXPPRZxQ-8j127IVJrKg2dePDbQ-93d4",
@@ -56,6 +64,79 @@
       };
     });
 
+    // 🔧 Pour écrire dans une cellule (input/select ou texte)
+function setCellValue(cell, value) {
+  if (!cell) return;
+  const input = cell.querySelector("input, select");
+  if (input) {
+    input.value = value ?? "";
+    // On déclenche un event pour que app.js recalcule les horaires / totaux
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  } else {
+    cell.textContent = value ?? "";
+  }
+}
+
+// 🧠 Appliquer un planning Firestore au tableau HTML
+function applyPlanningToTable(planning) {
+  if (!planning || !planning.lignes) return;
+
+  const rows = Array.from(document.querySelectorAll("#tbody tr"));
+  const lignes = planning.lignes;
+
+  lignes.forEach((ligne, index) => {
+    const row = rows[index];
+    if (!row) return;
+    const cells = row.querySelectorAll("td");
+
+    // On remet ce qui est vraiment utile (services + kms)
+    setCellValue(cells[1], ligne.dayNumber);   // N° du jour
+    setCellValue(cells[2], ligne.service1);    // Service 1 (select)
+    setCellValue(cells[3], ligne.service2);    // Service 2 (select)
+    setCellValue(cells[6], ligne.kmS1);        // Km S1
+    setCellValue(cells[7], ligne.kmS2);        // Km S2
+    // Le reste (horaires, durées, totaux) sera recalculé par app.js
+  });
+
+  // Totaux semaine (si tu veux les remettre directement)
+  if (planning.totals) {
+    const { totalWeek, totalKmWeek } = planning.totals;
+    if (totalWeek && document.getElementById("totalWeek")) {
+      document.getElementById("totalWeek").textContent = totalWeek;
+    }
+    if (totalKmWeek && document.getElementById("totalKmWeek")) {
+      document.getElementById("totalKmWeek").textContent = totalKmWeek;
+    }
+  }
+
+  console.log("Planning appliqué au tableau ✅");
+}
+
+
+    // 🔄 Charger le dernier planning enregistré
+async function loadLastPlanning() {
+  try {
+    const q = query(
+      collection(db, "plannings"),
+      orderBy("createdAt", "desc"),
+      limit(1)
+    );
+
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) {
+      console.log("Aucun planning enregistré pour l’instant.");
+      return;
+    }
+
+    const doc = snapshot.docs[0];
+    const data = doc.data();
+    console.log("Planning chargé depuis Firebase :", doc.id, data);
+    applyPlanningToTable(data);
+  } catch (e) {
+    console.error("Erreur lors du chargement du planning :", e);
+  }
+}
+
     const totalWeek = document.getElementById("totalWeek")?.textContent.trim() || "";
     const totalKmWeek = document.getElementById("totalKmWeek")?.textContent.trim() || "";
 
@@ -84,12 +165,15 @@
   }
 
   // 🔘 Branchement du bouton
-  document.addEventListener("DOMContentLoaded", () => {
-    const btn = document.getElementById("btn-sync");
-    if (btn) {
-      btn.addEventListener("click", savePlanning);
-    }
-  });
+ document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("btn-sync");
+  if (btn) {
+    btn.addEventListener("click", savePlanning);
+  }
+
+  // On charge automatiquement le dernier planning
+  loadLastPlanning();
+});
 
   window.padamDb = db;
 </script>
@@ -143,6 +227,7 @@
 
 </body>
 </html>
+
 
 
 
