@@ -27,20 +27,71 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // Fonction simple pour sauvegarder un "planning" de test
+  // 🔧 Petit helper : récupère soit la valeur d'un input/select, soit le texte
+  function getCellValue(cell) {
+    if (!cell) return "";
+    const input = cell.querySelector("input, select");
+    if (input) return input.value;
+    return cell.textContent.trim();
+  }
+
+  // 🧠 Construire un objet "planning" à partir du tableau HTML
+  function getPlanningFromTable() {
+    const rows = Array.from(document.querySelectorAll("#tbody tr"));
+
+    const lignes = rows.map((row) => {
+      const cells = row.querySelectorAll("td");
+
+      return {
+        dayLabel: getCellValue(cells[0]),       // Lundi, Mardi...
+        dayNumber: getCellValue(cells[1]),      // 20, 21...
+        service1: getCellValue(cells[2]),       // n5 (06:40 → 13:20)
+        service2: getCellValue(cells[3]),       // n8 (...)
+        horaires: getCellValue(cells[4]),       // texte de la colonne Horaire(s)
+        duree2: getCellValue(cells[5]),         // Durée 2
+        kmS1: Number(getCellValue(cells[6]) || 0),
+        kmS2: Number(getCellValue(cells[7]) || 0),
+        kmTotal: Number(getCellValue(cells[8]) || 0),
+        dureeTotal: getCellValue(cells[9])      // Durée (total)
+      };
+    });
+
+    // Totaux semaine en bas de la carte
+    const totalWeek = document.getElementById("totalWeek")?.textContent.trim() || "";
+    const totalKmWeek = document.getElementById("totalKmWeek")?.textContent.trim() || "";
+
+    return {
+      createdAt: new Date(),
+      totals: {
+        totalWeek,
+        totalKmWeek
+      },
+      lignes
+    };
+  }
+
+  // 💾 Sauvegarder le planning dans Firestore
   async function savePlanning() {
     try {
-      const docRef = await addDoc(collection(db, "plannings"), {
-        createdAt: new Date(),
-        note: "Planning de test depuis le bouton"
-      });
+      const planningData = getPlanningFromTable();
+
+      const docRef = await addDoc(collection(db, "plannings"), planningData);
+
       console.log("Planning enregistré avec l'ID :", docRef.id);
       alert("Planning envoyé sur Firebase ✅");
     } catch (e) {
       console.error("Erreur lors de l'enregistrement :", e);
-      alert("Erreur lors de l'enregistrement (voir console).");
+      alert("Erreur lors de l'enregistrement (regarde la console).");
     }
   }
+
+  // 🔘 Branchement du bouton
+  document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("btn-sync");
+    if (btn) {
+      btn.addEventListener("click", savePlanning);
+    }
+  });
 
   // On branche le bouton après chargement du DOM
   document.addEventListener("DOMContentLoaded", () => {
@@ -121,6 +172,7 @@
 </script>
 </body>
 </html>
+
 
 
 
