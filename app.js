@@ -220,15 +220,12 @@ class UIManager {
       /* Optimisations mobiles pour le scroll */
       @media (max-width: 768px) {
         .table-container {
-          scroll-snap-type: y mandatory;
+        
           overscroll-behavior: contain;
           -webkit-overflow-scrolling: touch;
         }
 
-        .day-row {
-          scroll-snap-align: start;
-          scroll-snap-stop: always;
-        }
+       
 
         /* Réduire la répaint pendant le scroll */
         .card, table, tbody, tr, td {
@@ -927,6 +924,7 @@ document.head.appendChild(style);
 document.addEventListener('DOMContentLoaded', () => {
   new PlanningApp();
 });
+
 
 
 
