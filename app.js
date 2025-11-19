@@ -10,6 +10,10 @@ const CONFIG = {
   UI: {
     DEBOUNCE_DELAY: 1500,
     TOAST_DURATION: 3000
+  },
+  SCROLL: {
+    SMOOTH: true,
+    MOBILE_OPTIMIZED: true
   }
 };
 
@@ -166,19 +170,255 @@ const TimeUtils = {
   }
 };
 
-// --- Gestionnaire d'UI ---
+// --- Gestionnaire d'UI AMÉLIORÉ avec scroll fluide ---
 class UIManager {
   constructor() {
     this.tbody = document.getElementById('tbody');
     this.totalWeekEl = document.getElementById('totalWeek');
     this.totalKmWeekEl = document.getElementById('totalKmWeek');
     this.debounceTimers = new Map();
+    
+    this.initSmoothScroll();
+    this.setupTouchOptimizations();
+  }
+
+  // NOUVEAU : Initialisation du scroll fluide
+  initSmoothScroll() {
+    // Appliquer le CSS pour le scroll fluide
+    this.injectSmoothScrollCSS();
+    
+    // Désactiver le zoom sur les inputs pour éviter les sauts
+    this.disableInputZoom();
+    
+    // Optimiser le scroll sur mobile
+    this.optimizeMobileScroll();
+  }
+
+  // NOUVEAU : Configuration des optimisations tactiles
+  setupTouchOptimizations() {
+    // Empêcher les gestes de zoom accidentels
+    document.addEventListener('touchmove', (e) => {
+      if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    // Améliorer le responsive des menus déroulants
+    this.enhanceSelectMenus();
+  }
+
+  // NOUVEAU : Injection du CSS pour le scroll fluide
+  injectSmoothScrollCSS() {
+    const scrollCSS = `
+      /* Scroll fluide pour tous les appareils */
+      .table-container {
+        -webkit-overflow-scrolling: touch !important;
+        scroll-behavior: smooth;
+        overflow-anchor: auto;
+      }
+
+      /* Optimisations mobiles pour le scroll */
+      @media (max-width: 768px) {
+        .table-container {
+          scroll-snap-type: y mandatory;
+          overscroll-behavior: contain;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        .day-row {
+          scroll-snap-align: start;
+          scroll-snap-stop: always;
+        }
+
+        /* Réduire la répaint pendant le scroll */
+        .card, table, tbody, tr, td {
+          transform: translateZ(0);
+          backface-visibility: hidden;
+          perspective: 1000;
+        }
+
+        /* Améliorer la performance du scroll */
+        tbody {
+          contain: layout style paint;
+        }
+      }
+
+      /* Désactiver le pull-to-refresh sur mobile */
+      body {
+        overscroll-behavior-y: contain;
+      }
+
+      /* Scrollbars personnalisées plus fines sur mobile */
+      .table-container::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      .table-container::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 2px;
+      }
+
+      .table-container::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      /* Éviter les flashs blancs pendant le scroll sur iOS */
+      .table-container {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      /* Réactiver la sélection pour les inputs */
+      .table-container input, 
+      .table-container select {
+        -webkit-user-select: text;
+        user-select: text;
+        -webkit-touch-callout: default;
+      }
+
+      /* Animation de scroll fluide */
+      .smooth-scroll {
+        scroll-behavior: smooth;
+      }
+
+      /* Indicateur de scroll pour mobile */
+      .scroll-indicator {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        background: rgba(92, 156, 139, 0.3);
+        border-radius: 2px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .scroll-indicator.visible {
+        opacity: 1;
+      }
+    `;
+
+    const style = document.createElement('style');
+    style.textContent = scrollCSS;
+    document.head.appendChild(style);
+  }
+
+  // NOUVEAU : Désactiver le zoom sur les inputs
+  disableInputZoom() {
+    const viewportMeta = document.querySelector('meta[name="viewport"]');
+    if (viewportMeta) {
+      viewportMeta.setAttribute('content', 
+        'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+    }
+  }
+
+  // NOUVEAU : Optimisations spécifiques mobile
+  optimizeMobileScroll() {
+    if (!this.isMobile()) return;
+
+    const tableContainer = document.querySelector('.table-container') || 
+                          document.querySelector('.card > div:first-child');
+    
+    if (tableContainer) {
+      // Ajouter la classe pour le scroll fluide
+      tableContainer.classList.add('smooth-scroll');
+      
+      // Créer un indicateur de scroll
+      this.createScrollIndicator(tableContainer);
+      
+      // Optimiser les événements de touch
+      this.optimizeTouchEvents(tableContainer);
+    }
+  }
+
+  // NOUVEAU : Détection mobile
+  isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+           window.innerWidth <= 768;
+  }
+
+  // NOUVEAU : Créer un indicateur de scroll
+  createScrollIndicator(container) {
+    const indicator = document.createElement('div');
+    indicator.className = 'scroll-indicator';
+    container.style.position = 'relative';
+    container.appendChild(indicator);
+
+    let hideTimeout;
+    const showIndicator = () => {
+      indicator.classList.add('visible');
+      clearTimeout(hideTimeout);
+      hideTimeout = setTimeout(() => {
+        indicator.classList.remove('visible');
+      }, 1500);
+    };
+
+    container.addEventListener('scroll', showIndicator);
+    container.addEventListener('touchstart', showIndicator);
+  }
+
+  // NOUVEAU : Optimiser les événements tactiles
+  optimizeTouchEvents(container) {
+    let startY;
+    let isScrolling = false;
+
+    container.addEventListener('touchstart', (e) => {
+      startY = e.touches[0].clientY;
+      isScrolling = false;
+    }, { passive: true });
+
+    container.addEventListener('touchmove', (e) => {
+      if (!startY) return;
+      
+      const y = e.touches[0].clientY;
+      const diff = y - startY;
+      
+      if (Math.abs(diff) > 5) {
+        isScrolling = true;
+      }
+    }, { passive: true });
+
+    container.addEventListener('touchend', (e) => {
+      if (isScrolling) {
+        e.preventDefault();
+      }
+      startY = null;
+      isScrolling = false;
+    }, { passive: false });
+  }
+
+  // NOUVEAU : Améliorer les menus déroulants sur mobile
+  enhanceSelectMenus() {
+    if (!this.isMobile()) return;
+
+    document.addEventListener('focus', (e) => {
+      if (e.target.tagName === 'SELECT') {
+        // Scroll doucement vers l'élément
+        setTimeout(() => {
+          e.target.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center',
+            inline: 'nearest'
+          });
+        }, 100);
+      }
+    }, true);
   }
 
   createElement(tag, classes = '', attributes = {}) {
     const el = document.createElement(tag);
     if (classes) el.className = classes;
     Object.entries(attributes).forEach(([key, value]) => el.setAttribute(key, value));
+    
+    // NOUVEAU : Ajouter des attributs pour le mobile
+    if (this.isMobile() && (tag === 'select' || tag === 'input')) {
+      el.setAttribute('data-mobile-optimized', 'true');
+    }
+    
     return el;
   }
 
@@ -233,6 +473,16 @@ class UIManager {
     sel.addEventListener('change', (e) => {
       this.animateElement(sel, 'pulse');
       onChange(e.target.value);
+      
+      // NOUVEAU : Scroll doux après sélection sur mobile
+      if (this.isMobile()) {
+        setTimeout(() => {
+          sel.closest('tr').scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'nearest'
+          });
+        }, 300);
+      }
     });
 
     return sel;
@@ -253,6 +503,18 @@ class UIManager {
       const value = e.target.value === '' ? 0 : Number(e.target.value);
       this.animateElement(input, 'pulse');
       onChange(value);
+    });
+
+    // NOUVEAU : Optimisation pour le clavier mobile
+    input.addEventListener('focus', () => {
+      if (this.isMobile()) {
+        setTimeout(() => {
+          input.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center'
+          });
+        }, 100);
+      }
     });
 
     return input;
@@ -280,7 +542,7 @@ class UIManager {
   }
 }
 
-// --- Application principale ---
+// --- Application principale avec optimisations scroll ---
 class PlanningApp {
   constructor() {
     this.stateManager = new PlanningState();
@@ -292,6 +554,40 @@ class PlanningApp {
     this.render();
     this.bindEvents();
     this.setupKeyboardShortcuts();
+    this.setupScrollOptimizations(); // NOUVEAU
+  }
+
+  // NOUVEAU : Configuration des optimisations de scroll
+  setupScrollOptimizations() {
+    // Forcer le recalcul des dimensions après le rendu
+    setTimeout(() => {
+      this.forceReflow();
+    }, 100);
+
+    // Observer les changements de taille pour réoptimiser
+    this.setupResizeObserver();
+  }
+
+  // NOUVEAU : Forcer le reflow pour optimiser le rendu
+  forceReflow() {
+    const table = document.getElementById('planning');
+    if (table) {
+      void table.offsetHeight;
+    }
+  }
+
+  // NOUVEAU : Observer les changements de taille
+  setupResizeObserver() {
+    if ('ResizeObserver' in window) {
+      const ro = new ResizeObserver(() => {
+        this.ui.optimizeMobileScroll();
+      });
+      
+      const container = document.querySelector('.container');
+      if (container) {
+        ro.observe(container);
+      }
+    }
   }
 
   bindEvents() {
@@ -351,6 +647,9 @@ class PlanningApp {
   createDayRow(day, index, rowState, s1, s2, totalTime, kmTotal) {
     const tr = this.ui.createElement('tr', 'day-row');
     tr.style.animationDelay = `${index * 50}ms`;
+    
+    // NOUVEAU : Ajouter un identifiant pour le scroll
+    tr.id = `day-${index}`;
 
     // Colonne Jour
     const tdDay = this.createLabeledCell('Jour');
@@ -484,12 +783,7 @@ class PlanningApp {
   }
 }
 
-// --- Initialisation de l'application ---
-document.addEventListener('DOMContentLoaded', () => {
-  new PlanningApp();
-});
-
-// --- CSS additionnel pour les nouvelles fonctionnalités ---
+// --- CSS additionnel AMÉLIORÉ avec optimisations scroll ---
 const additionalCSS = `
 /* Animations */
 @keyframes pulse {
@@ -603,6 +897,33 @@ const additionalCSS = `
     width: 100%;
     min-width: auto;
   }
+  
+  /* Optimisations supplémentaires pour le mobile */
+  .table-container {
+    scroll-padding: 20px;
+  }
+  
+  .day-row {
+    min-height: 60px;
+  }
+  
+  /* Améliorer la visibilité pendant le scroll */
+  .day-row:focus-within {
+    background: rgba(92, 156, 139, 0.05) !important;
+    transform: scale(1.01);
+    transition: all 0.2s ease;
+  }
+}
+
+/* NOUVEAU : Styles pour le scroll fluide */
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smooth-scroll {
+    scroll-behavior: auto;
+  }
 }
 `;
 
@@ -611,3 +932,7 @@ const style = document.createElement('style');
 style.textContent = additionalCSS;
 document.head.appendChild(style);
 
+// Initialisation
+document.addEventListener('DOMContentLoaded', () => {
+  new PlanningApp();
+});
