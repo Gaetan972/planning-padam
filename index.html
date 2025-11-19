@@ -13,6 +13,35 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyClXPPRZxQ-8j127IVJrKg2dePDbQ-93d4",
+    authDomain: "padam-846f8.firebaseapp.com",
+    projectId: "padam-846f8",
+    storageBucket: "padam-846f8.firebasestorage.app",
+    messagingSenderId: "201685233369",
+    appId: "1:201685233369:web:46f5b7c4ead892771a98c8"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // 🔥 Test : envoyer un document dans Firestore au chargement de la page
+  (async () => {
+    try {
+      const ref = await addDoc(collection(db, "tests"), {
+        message: "Hello Firestore !",
+        createdAt: new Date()
+      });
+      console.log("Document envoyé ! ID :", ref.id);
+    } catch (error) {
+      console.error("Erreur Firestore :", error);
+    }
+  })();
+</script>
 
   
 </head>
@@ -78,6 +107,7 @@
 </script>
 </body>
 </html>
+
 
 
 
