@@ -475,7 +475,7 @@ class UIManager {
       if (this.isMobile()) {
         setTimeout(() => {
           sel.closest('tr').scrollIntoView({ 
-            behavior: 'smooth', 
+            behavior: 'auto', 
             block: 'nearest'
           });
         }, 300);
@@ -924,6 +924,7 @@ document.head.appendChild(style);
 document.addEventListener('DOMContentLoaded', () => {
   new PlanningApp();
 });
+
 
 
 
