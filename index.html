@@ -27,7 +27,7 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // 🔧 Petit helper : récupère soit la valeur d'un input/select, soit le texte
+  // 🔧 Petit helper : récupère la valeur d’une cellule
   function getCellValue(cell) {
     if (!cell) return "";
     const input = cell.querySelector("input, select");
@@ -35,7 +35,7 @@
     return cell.textContent.trim();
   }
 
-  // 🧠 Construire un objet "planning" à partir du tableau HTML
+  // 🧠 Construire l’objet "planning" à partir du tableau HTML
   function getPlanningFromTable() {
     const rows = Array.from(document.querySelectorAll("#tbody tr"));
 
@@ -43,20 +43,19 @@
       const cells = row.querySelectorAll("td");
 
       return {
-        dayLabel: getCellValue(cells[0]),       // Lundi, Mardi...
-        dayNumber: getCellValue(cells[1]),      // 20, 21...
-        service1: getCellValue(cells[2]),       // n5 (06:40 → 13:20)
-        service2: getCellValue(cells[3]),       // n8 (...)
-        horaires: getCellValue(cells[4]),       // texte de la colonne Horaire(s)
-        duree2: getCellValue(cells[5]),         // Durée 2
+        dayLabel: getCellValue(cells[0]),
+        dayNumber: getCellValue(cells[1]),
+        service1: getCellValue(cells[2]),
+        service2: getCellValue(cells[3]),
+        horaires: getCellValue(cells[4]),
+        duree2: getCellValue(cells[5]),
         kmS1: Number(getCellValue(cells[6]) || 0),
         kmS2: Number(getCellValue(cells[7]) || 0),
         kmTotal: Number(getCellValue(cells[8]) || 0),
-        dureeTotal: getCellValue(cells[9])      // Durée (total)
+        dureeTotal: getCellValue(cells[9]),
       };
     });
 
-    // Totaux semaine en bas de la carte
     const totalWeek = document.getElementById("totalWeek")?.textContent.trim() || "";
     const totalKmWeek = document.getElementById("totalKmWeek")?.textContent.trim() || "";
 
@@ -64,24 +63,23 @@
       createdAt: new Date(),
       totals: {
         totalWeek,
-        totalKmWeek
+        totalKmWeek,
       },
-      lignes
+      lignes,
     };
   }
 
-  // 💾 Sauvegarder le planning dans Firestore
+  // 💾 Sauvegarder dans Firestore
   async function savePlanning() {
     try {
       const planningData = getPlanningFromTable();
-
       const docRef = await addDoc(collection(db, "plannings"), planningData);
 
       console.log("Planning enregistré avec l'ID :", docRef.id);
-      alert("Planning envoyé sur Firebase ✅");
+      alert("Planning envoyé dans Firebase !");
     } catch (e) {
-      console.error("Erreur lors de l'enregistrement :", e);
-      alert("Erreur lors de l'enregistrement (regarde la console).");
+      console.error("Erreur :", e);
+      alert("Erreur lors de l’enregistrement.");
     }
   }
 
@@ -93,17 +91,9 @@
     }
   });
 
-  // On branche le bouton après chargement du DOM
-  document.addEventListener("DOMContentLoaded", () => {
-    const btn = document.getElementById("btn-sync");
-    if (btn) {
-      btn.addEventListener("click", savePlanning);
-    }
-  });
-
-  // Optionnel : dispo dans la console si tu veux tester à la main
   window.padamDb = db;
 </script>
+
 
   
 </head>
@@ -150,28 +140,10 @@
     </div>
   </div>
 
-  <!-- Importation du SDK Firebase depuis le CDN -->
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
 
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyClXPPRZxQ-8j127IVJrKg2dePDbQ-93d4",
-    authDomain: "padam-846f8.firebaseapp.com",
-    projectId: "padam-846f8",
-    storageBucket: "padam-846f8.firebasestorage.app",
-    messagingSenderId: "201685233369",
-    appId: "1:201685233369:web:46f5b7c4ead892771a98c8"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>
 </body>
 </html>
+
 
 
 
