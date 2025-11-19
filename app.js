@@ -1,7 +1,7 @@
 // --- Configuration et constantes ---
 const CONFIG = {
   ANIMATION: {
-    DURATION: 300,
+    DURATION: 600,
     EASING: 'cubic-bezier(0.4, 0, 0.2, 1)'
   },
   STORAGE: {
@@ -936,3 +936,4 @@ document.head.appendChild(style);
 document.addEventListener('DOMContentLoaded', () => {
   new PlanningApp();
 });
+
