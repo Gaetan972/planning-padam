@@ -8,7 +8,7 @@ const CONFIG = {
     KEY: 'padam-week-v2'
   },
   UI: {
-    DEBOUNCE_DELAY: 500,
+    DEBOUNCE_DELAY: 1500,
     TOAST_DURATION: 3000
   }
 };
@@ -610,3 +610,4 @@ const additionalCSS = `
 const style = document.createElement('style');
 style.textContent = additionalCSS;
 document.head.appendChild(style);
+
