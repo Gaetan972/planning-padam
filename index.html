@@ -27,18 +27,31 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // 🔥 Test : envoyer un document dans Firestore au chargement de la page
-  (async () => {
+  // Fonction simple pour sauvegarder un "planning" de test
+  async function savePlanning() {
     try {
-      const ref = await addDoc(collection(db, "tests"), {
-        message: "Hello Firestore !",
-        createdAt: new Date()
+      const docRef = await addDoc(collection(db, "plannings"), {
+        createdAt: new Date(),
+        note: "Planning de test depuis le bouton"
       });
-      console.log("Document envoyé ! ID :", ref.id);
-    } catch (error) {
-      console.error("Erreur Firestore :", error);
+      console.log("Planning enregistré avec l'ID :", docRef.id);
+      alert("Planning envoyé sur Firebase ✅");
+    } catch (e) {
+      console.error("Erreur lors de l'enregistrement :", e);
+      alert("Erreur lors de l'enregistrement (voir console).");
     }
-  })();
+  }
+
+  // On branche le bouton après chargement du DOM
+  document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("btn-sync");
+    if (btn) {
+      btn.addEventListener("click", savePlanning);
+    }
+  });
+
+  // Optionnel : dispo dans la console si tu veux tester à la main
+  window.padamDb = db;
 </script>
 
   
@@ -48,7 +61,9 @@
     <h1>Planning Padam par Gaëtan</h1>
     <div class="muted">Choisis 1 ou 2 services par jour. Les horaires et durées se calculent automatiquement.</div>
   </header>
-
+<button class="btn secondary" id="btn-sync" title="Enregistrer dans Firebase">
+  Synchroniser avec Padam
+</button>
   <div class="container">
     <div class="card">
       <div style="overflow:auto; border-radius:14px 14px 0 0">
@@ -105,6 +120,7 @@
 </script>
 </body>
 </html>
+
 
 
 
