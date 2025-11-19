@@ -1,7 +1,7 @@
 // --- Configuration et constantes ---
 const CONFIG = {
   ANIMATION: {
-    DURATION: 3000,
+    DURATION: 300,
     EASING: 'cubic-bezier(0.4, 0, 0.2, 1)'
   },
   STORAGE: {
@@ -213,7 +213,7 @@ class UIManager {
       /* Scroll fluide pour tous les appareils */
       .table-container {
         -webkit-overflow-scrolling: touch !important;
-        scroll-behavior: smooth;
+        /*scroll-behavior: smooth;*/
         overflow-anchor: auto;
       }
 
@@ -936,6 +936,7 @@ document.head.appendChild(style);
 document.addEventListener('DOMContentLoaded', () => {
   new PlanningApp();
 });
+
 
 
 
