@@ -915,16 +915,7 @@ const additionalCSS = `
   }
 }
 
-/* NOUVEAU : Styles pour le scroll fluide */
-.smooth-scroll {
-  scroll-behavior: smooth;
-}
 
-@media (prefers-reduced-motion: reduce) {
-  .smooth-scroll {
-    scroll-behavior: auto;
-  }
-}
 `;
 
 // Injection du CSS additionnel
@@ -936,6 +927,7 @@ document.head.appendChild(style);
 document.addEventListener('DOMContentLoaded', () => {
   new PlanningApp();
 });
+
 
 
 
