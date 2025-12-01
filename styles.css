@@ -413,6 +413,7 @@ select {
         margin: 1rem 0;
         padding: 1rem;
         /* on enlève l’animation slideInUp pour ne pas alourdir le scroll */
+        cursor: pointer; /* pour montrer que la carte est cliquable */
     }
 
     td {
@@ -469,6 +470,42 @@ select {
         flex: 1;
         min-height: 52px;
         font-size: 1rem;
+    }
+
+    /* ---------- TOGGLE MOBILE : fermé = on ne voit que les horaires ---------- */
+
+    /* Par défaut : tout est visible (état ouvert, pas de classe) */
+
+    /* Quand la ligne a la classe .collapsed, on cache tout... */
+    .day-row.collapsed td {
+        display: none;
+    }
+
+    /* ...sauf Jour et Horaire(s) */
+    .day-row.collapsed td[data-label="Jour"],
+    .day-row.collapsed td[data-label="Horaire(s)"] {
+        display: block;
+        border-top: none;
+    }
+
+    /* On met un petit indicateur sur la ligne d'horaires */
+    .day-row td[data-label="Horaire(s)"] {
+        position: relative;
+        padding-right: 2rem;
+    }
+
+    .day-row td[data-label="Horaire(s)"]::after {
+        content: "▼";
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.8rem;
+        color: var(--muted);
+    }
+
+    .day-row.collapsed td[data-label="Horaire(s)"]::after {
+        content: "▶";
     }
 }
 
