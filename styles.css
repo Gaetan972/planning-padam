@@ -48,7 +48,9 @@ html {
 body {
     font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
     color: var(--text);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+     background: #020617 url("public/9019808.jpg") center center no-repeat;
+    background-size: cover;      /* l’image couvre tout l’écran */
+    background-attachment: fixed; /* effet léger de parallaxe sur desktop (optionnel) */
     min-height: 100vh;
     line-height: 1.6;
     font-weight: 400;
@@ -547,3 +549,4 @@ select {
     background: linear-gradient(to right, #f6f7f8 8%, #edeef1 18%, #f6f7f8 33%);
     background-size: 800px 104px;
 }
+
