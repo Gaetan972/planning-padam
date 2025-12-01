@@ -41,7 +41,7 @@
 }
 
 html {
-    scroll-behavior: smooth;
+    
 }
 
 body {
@@ -544,4 +544,5 @@ select {
     background: linear-gradient(to right, #f6f7f8 8%, #edeef1 18%, #f6f7f8 33%);
     background-size: 800px 104px;
 }
+
 
