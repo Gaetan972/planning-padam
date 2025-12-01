@@ -40,8 +40,9 @@
     padding: 0;
 }
 
+/* On laisse le scroll par défaut (pas de scroll-behavior smooth) */
 html {
-    
+    /* scroll-behavior: smooth;  SUPPRIMÉ POUR NE PAS TOUCHER AU SCROLL */
 }
 
 body {
@@ -53,29 +54,8 @@ body {
     font-weight: 400;
 }
 
-/* Fond avec effet de profondeur */
-body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background:
-        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
-    filter: blur(40px);
-    z-index: -2;
-}
-
-body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background:
-        url("public/pexels-adrien-olichon-1257089-2387793.jpg") center/cover no-repeat;
-    filter: blur(8px) brightness(0.7) saturate(1.2);
-    transform: scale(1.02);
-    z-index: -1;
-}
+/* Fond simplifié : on supprime les gros blur sur toute la page */
+/* body::before et body::after supprimés pour de meilleures perfs */
 
 /* --------- Header moderne --------- */
 header {
@@ -138,8 +118,8 @@ h1 {
 
 .card {
     border-radius: 24px;
-    background: var(--glass);
-    backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(255, 255, 255, 0.95); /* plus simple, sans blur global */
+    /* backdrop-filter supprimé */
     border: 1px solid var(--glass-border);
     box-shadow: var(--shadow-xl);
     overflow: hidden;
@@ -153,7 +133,8 @@ h1 {
 
 /* --------- Table moderne --------- */
 .table-container {
-    overflow: hidden;
+    /* On laisse le scroll normal, juste overflow visible/auto si besoin */
+    overflow-x: auto;
     border-radius: 20px 20px 0 0;
 }
 
@@ -178,7 +159,7 @@ thead th {
     top: 0;
     z-index: 10;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%);
-    backdrop-filter: blur(10px);
+    /* plus de blur ici non plus */
     font-size: 0.75rem;
     font-weight: 700;
     color: var(--muted);
@@ -188,9 +169,10 @@ thead th {
     padding: 1.25rem 1.25rem;
 }
 
-/* Zébrage amélioré avec animation */
+/* Zébrage amélioré – on garde, mais sans animation en continu */
 tbody tr {
-    animation: fadeInRow 0.5s var(--ease-out);
+    /* animation supprimée pour alléger le scroll */
+    /* animation: fadeInRow 0.5s var(--ease-out); */
 }
 
 @keyframes fadeInRow {
@@ -289,7 +271,7 @@ select {
     padding: 1.5rem 2rem;
     border-top: 1px solid var(--border-light);
     background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
+    /* backdrop-filter supprimé */
     gap: 1.5rem;
 }
 
@@ -331,7 +313,6 @@ select {
 }
 
 @keyframes pulse {
-
     0%,
     100% {
         box-shadow: 0 0 0 0 rgba(213, 62, 90, 0.4);
@@ -403,6 +384,7 @@ select {
     .card {
         border-radius: 20px;
         margin: 0 -0.5rem;
+        box-shadow: var(--shadow-lg);
     }
 
     /* Transformation en cartes pour mobile */
@@ -430,20 +412,7 @@ select {
         box-shadow: var(--shadow);
         margin: 1rem 0;
         padding: 1rem;
-        backdrop-filter: blur(10px);
-        animation: slideInUp 0.5s var(--ease-out);
-    }
-
-    @keyframes slideInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        /* on enlève l’animation slideInUp pour ne pas alourdir le scroll */
     }
 
     td {
@@ -454,7 +423,7 @@ select {
         box-shadow: none !important;
     }
 
-    td+td {
+    td + td {
         border-top: 1px dashed var(--border-light);
     }
 
@@ -483,15 +452,12 @@ select {
 
     /* Footer adaptatif */
     .footer {
-        position: sticky;
-        bottom: 0;
-        z-index: 100;
-        background: rgba(255, 255, 255, 0.98);
-        backdrop-filter: blur(20px);
-        border-radius: 20px 20px 0 0;
+        position: static; /* plus de sticky pour éviter tout effet sur le scroll */
+        border-radius: 0;
         flex-direction: column;
         gap: 1rem;
         padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
     }
 
     .footer .stack {
@@ -544,5 +510,3 @@ select {
     background: linear-gradient(to right, #f6f7f8 8%, #edeef1 18%, #f6f7f8 33%);
     background-size: 800px 104px;
 }
-
-
