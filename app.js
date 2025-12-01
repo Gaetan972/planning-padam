@@ -167,7 +167,7 @@ const TimeUtils = {
   }
 };
 
-// --- Gestionnaire d'UI (version simplifiée, sans gestion du scroll) ---
+// --- Gestionnaire d'UI ---
 class UIManager {
   constructor() {
     this.tbody = document.getElementById('tbody');
@@ -356,11 +356,31 @@ class PlanningApp {
 
     // Colonne Jour
     const tdDay = this.createLabeledCell('Jour');
-    tdDay.appendChild(this.ui.createDayBadge(day.day, rowState.nJour || day.nJour));
+    const dayBadge = this.ui.createDayBadge(day.day, rowState.nJour || day.nJour);
+    tdDay.appendChild(dayBadge);
+
+    // 👉 Sur mobile : tap sur le jour = modifier le numéro
+    if (this.ui.isMobile()) {
+      tdDay.addEventListener('click', (e) => {
+        e.stopPropagation(); // pour ne pas déclencher le toggle
+        const current = rowState.nJour || day.nJour;
+        const input = prompt('Numéro du jour ?', current);
+        if (input === null) return; // annulé
+
+        const num = Number(input);
+        if (Number.isNaN(num)) {
+          PlanningApp.showToast('Numéro invalide', 'error');
+          return;
+        }
+
+        this.stateManager.updateDay(index, { nJour: num });
+        this.render();
+      });
+    }
 
     // Colonne n du jour (cachée sur mobile)
     const tdN = this.createLabeledCell('n du jour', 'hide-sm');
-    const nInput = this.ui.createNumberInput(rowState.nJour, (value) => {
+    const nInput = this.ui.createNumberInput(rowState.nJour ?? day.nJour, (value) => {
       this.stateManager.updateDay(index, { nJour: value });
       this.ui.debounce(`nJour-${index}`, () => this.render());
     });
@@ -414,13 +434,12 @@ class PlanningApp {
 
     [tdDay, tdN, tdS1, tdS2, tdH, tdD2, tdKm1, tdKm2, tdKmTot, tdTime].forEach(td => tr.appendChild(td));
 
-    // 🔽 Toggle mobile : FERME PAR DÉFAUT, on voit seulement Jour + Horaire(s)
+    // 🔽 Toggle mobile : fermé par défaut (Jour + Horaire(s) seulement)
     if (this.ui.isMobile()) {
       tr.classList.add('collapsed');
 
       tr.addEventListener('click', (e) => {
         const tag = e.target.tagName;
-        // ne pas toggler quand on clique sur les champs
         if (tag === 'INPUT' || tag === 'SELECT' || tag === 'BUTTON') return;
         tr.classList.toggle('collapsed');
       });
