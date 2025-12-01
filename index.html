@@ -7,165 +7,161 @@
   <link rel="stylesheet" href="styles.css">
   <script src="app.js" defer></script>
 
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      getDocs,
+      query,
+      orderBy,
+      limit
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+    const firebaseConfig = {
+      apiKey: "AIzaSyClXPPRZxQ-8j127IVJrKg2dePDbQ-93d4",
+      authDomain: "padam-846f8.firebaseapp.com",
+      projectId: "padam-846f8",
+      storageBucket: "padam-846f8.firebasestorage.app",
+      messagingSenderId: "201685233369",
+      appId: "1:201685233369:web:46f5b7c4ead892771a98c8"
+    };
 
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import {
-    getFirestore,
-    collection,
-    addDoc,
-    getDocs,
-    query,
-    orderBy,
-    limit
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyClXPPRZxQ-8j127IVJrKg2dePDbQ-93d4",
-    authDomain: "padam-846f8.firebaseapp.com",
-    projectId: "padam-846f8",
-    storageBucket: "padam-846f8.firebasestorage.app",
-    messagingSenderId: "201685233369",
-    appId: "1:201685233369:web:46f5b7c4ead892771a98c8"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // ---------------------------------------------------
-  // GET VALUE
-  // ---------------------------------------------------
-  function getCellValue(cell) {
-    if (!cell) return "";
-    const input = cell.querySelector("input, select");
-    if (input) return input.value;
-    return cell.textContent.trim();
-  }
-
-  // ---------------------------------------------------
-  // SET VALUE
-  // ---------------------------------------------------
-  function setCellValue(cell, value) {
-    if (!cell) return;
-    const input = cell.querySelector("input, select");
-    if (input) {
-      input.value = value ?? "";
-      input.dispatchEvent(new Event("change", { bubbles: true }));
-    } else {
-      cell.textContent = value ?? "";
+    // ---------------------------------------------------
+    // GET VALUE
+    // ---------------------------------------------------
+    function getCellValue(cell) {
+      if (!cell) return "";
+      const input = cell.querySelector("input, select");
+      if (input) return input.value;
+      return cell.textContent.trim();
     }
-  }
 
-  // ---------------------------------------------------
-  // BUILD PLANNING OBJECT
-  // ---------------------------------------------------
-  function getPlanningFromTable() {
-    const rows = Array.from(document.querySelectorAll("#tbody tr"));
+    // ---------------------------------------------------
+    // SET VALUE (MODIFIÉ)
+    // ---------------------------------------------------
+    function setCellValue(cell, value) {
+      if (!cell) return;
+      const input = cell.querySelector("input, select");
+      if (input) {
+        input.value = value ?? "";
 
-    const lignes = rows.map((row) => {
-      const cells = row.querySelectorAll("td");
+        const opts = { bubbles: true };
+        // On déclenche input + change pour que app.js mette bien à jour le state + badge
+        input.dispatchEvent(new Event("input", opts));
+        input.dispatchEvent(new Event("change", opts));
+      } else {
+        cell.textContent = value ?? "";
+      }
+    }
+
+    // ---------------------------------------------------
+    // BUILD PLANNING OBJECT
+    // ---------------------------------------------------
+    function getPlanningFromTable() {
+      const rows = Array.from(document.querySelectorAll("#tbody tr"));
+
+      const lignes = rows.map((row) => {
+        const cells = row.querySelectorAll("td");
+
+        return {
+          dayLabel: getCellValue(cells[0]),
+          dayNumber: getCellValue(cells[1]),
+          service1: getCellValue(cells[2]),
+          service2: getCellValue(cells[3]),
+          horaires: getCellValue(cells[4]),
+          duree2: getCellValue(cells[5]),
+          kmS1: Number(getCellValue(cells[6]) || 0),
+          kmS2: Number(getCellValue(cells[7]) || 0),
+          kmTotal: Number(getCellValue(cells[8]) || 0),
+          dureeTotal: getCellValue(cells[9]),
+        };
+      });
+
+      const totalWeek = document.getElementById("totalWeek")?.textContent.trim() || "";
+      const totalKmWeek = document.getElementById("totalKmWeek")?.textContent.trim() || "";
 
       return {
-        dayLabel: getCellValue(cells[0]),
-        dayNumber: getCellValue(cells[1]),
-        service1: getCellValue(cells[2]),
-        service2: getCellValue(cells[3]),
-        horaires: getCellValue(cells[4]),
-        duree2: getCellValue(cells[5]),
-        kmS1: Number(getCellValue(cells[6]) || 0),
-        kmS2: Number(getCellValue(cells[7]) || 0),
-        kmTotal: Number(getCellValue(cells[8]) || 0),
-        dureeTotal: getCellValue(cells[9]),
+        createdAt: new Date(),
+        totals: { totalWeek, totalKmWeek },
+        lignes,
       };
-    });
+    }
 
-    const totalWeek = document.getElementById("totalWeek")?.textContent.trim() || "";
-    const totalKmWeek = document.getElementById("totalKmWeek")?.textContent.trim() || "";
+    // ---------------------------------------------------
+    // APPLY A LOADED PLANNING TO THE TABLE
+    // ---------------------------------------------------
+    function applyPlanningToTable(planning) {
+      if (!planning || !planning.lignes) return;
 
-    return {
-      createdAt: new Date(),
-      totals: { totalWeek, totalKmWeek },
-      lignes,
-    };
-  }
+      const rows = Array.from(document.querySelectorAll("#tbody tr"));
 
-  // ---------------------------------------------------
-  // APPLY A LOADED PLANNING TO THE TABLE
-  // ---------------------------------------------------
-  function applyPlanningToTable(planning) {
-    if (!planning || !planning.lignes) return;
+      planning.lignes.forEach((ligne, index) => {
+        const row = rows[index];
+        if (!row) return;
 
-    const rows = Array.from(document.querySelectorAll("#tbody tr"));
+        const cells = row.querySelectorAll("td");
 
-    planning.lignes.forEach((ligne, index) => {
-      const row = rows[index];
-      if (!row) return;
+        setCellValue(cells[1], ligne.dayNumber);
+        setCellValue(cells[2], ligne.service1);
+        setCellValue(cells[3], ligne.service2);
+        setCellValue(cells[6], ligne.kmS1);
+        setCellValue(cells[7], ligne.kmS2);
+      });
 
-      const cells = row.querySelectorAll("td");
+      console.log("Planning appliqué au tableau");
+    }
 
-      setCellValue(cells[1], ligne.dayNumber);
-      setCellValue(cells[2], ligne.service1);
-      setCellValue(cells[3], ligne.service2);
-      setCellValue(cells[6], ligne.kmS1);
-      setCellValue(cells[7], ligne.kmS2);
-    });
+    // ---------------------------------------------------
+    // LOAD LAST PLANNING
+    // ---------------------------------------------------
+    async function loadLastPlanning() {
+      try {
+        const q = query(collection(db, "plannings"), orderBy("createdAt", "desc"), limit(1));
+        const snap = await getDocs(q);
 
-    console.log("Planning appliqué au tableau");
-  }
+        if (snap.empty) {
+          console.log("Aucun planning enregistré.");
+          return;
+        }
 
-  // ---------------------------------------------------
-  // LOAD LAST PLANNING
-  // ---------------------------------------------------
-  async function loadLastPlanning() {
-    try {
-      const q = query(collection(db, "plannings"), orderBy("createdAt", "desc"), limit(1));
-      const snap = await getDocs(q);
+        const latest = snap.docs[0].data();
+        console.log("Planning chargé :", latest);
+        applyPlanningToTable(latest);
 
-      if (snap.empty) {
-        console.log("Aucun planning enregistré.");
-        return;
+      } catch (err) {
+        console.error("Erreur chargement planning :", err);
       }
-
-      const latest = snap.docs[0].data();
-      console.log("Planning chargé :", latest);
-      applyPlanningToTable(latest);
-
-    } catch (err) {
-      console.error("Erreur chargement planning :", err);
     }
-  }
 
-  // ---------------------------------------------------
-  // SAVE PLANNING
-  // ---------------------------------------------------
-  async function savePlanning() {
-    try {
-      const data = getPlanningFromTable();
-      await addDoc(collection(db, "plannings"), data);
+    // ---------------------------------------------------
+    // SAVE PLANNING
+    // ---------------------------------------------------
+    async function savePlanning() {
+      try {
+        const data = getPlanningFromTable();
+        await addDoc(collection(db, "plannings"), data);
 
-      alert("Planning sauvegardé !");
-    } catch (err) {
-      console.error("Erreur sauvegarde :", err);
-      alert("Erreur lors de l’enregistrement.");
+        alert("Planning sauvegardé !");
+      } catch (err) {
+        console.error("Erreur sauvegarde :", err);
+        alert("Erreur lors de l’enregistrement.");
+      }
     }
-  }
 
-  // ---------------------------------------------------
-  // ON PAGE LOAD
-  // ---------------------------------------------------
-  document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("btn-sync").addEventListener("click", savePlanning);
-    loadLastPlanning();
-  });
+    // ---------------------------------------------------
+    // ON PAGE LOAD
+    // ---------------------------------------------------
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("btn-sync").addEventListener("click", savePlanning);
+      loadLastPlanning();
+    });
 
-</script>
-
-
-
-  
+  </script>
 </head>
 <body>
   <header>
@@ -178,51 +174,36 @@
       <div style="overflow:auto; border-radius:14px 14px 0 0">
         <table id="planning">
           <thead>
-  <tr>
-    <th>Jour</th>
-    <th class="hide-sm">n du jour</th>
-    <th>Service 1</th>
-    <th>Service 2</th>
-    <th>Horaire(s)</th>
-    <th class="hide-sm">Durée 2</th>
-    <th>Km S1</th>
-    <th>Km S2</th>
-    <th>Km (total)</th>
-    <th class="right">Durée (total)</th>
-  </tr>
-</thead>
+            <tr>
+              <th>Jour</th>
+              <th class="hide-sm">n du jour</th>
+              <th>Service 1</th>
+              <th>Service 2</th>
+              <th>Horaire(s)</th>
+              <th class="hide-sm">Durée 2</th>
+              <th>Km S1</th>
+              <th>Km S2</th>
+              <th>Km (total)</th>
+              <th class="right">Durée (total)</th>
+            </tr>
+          </thead>
           <tbody id="tbody"></tbody>
         </table>
       </div>
       <div class="footer">
-  <div class="stack">
-    <button class="btn secondary" id="btn-reset" title="Effacer la semaine">Réinitialiser</button>
-    <button class="btn secondary" id="btn-export" title="Exporter au format CSV">Exporter CSV</button>
-    <button class="btn secondary" id="btn-sync" title="Enregistrer dans Firebase">
-  Synchroniser avec Padam
-</button>
-  </div>
-  <div class="stack">
-    <div class="badge">Total semaine : <span id="totalWeek">0:00</span></div>
-    <div class="badge">Total km semaine : <span id="totalKmWeek">0</span> km</div>
-  </div>
-</div>
+        <div class="stack">
+          <button class="btn secondary" id="btn-reset" title="Effacer la semaine">Réinitialiser</button>
+          <button class="btn secondary" id="btn-export" title="Exporter au format CSV">Exporter CSV</button>
+          <button class="btn secondary" id="btn-sync" title="Enregistrer dans Firebase">
+            Synchroniser avec Padam
+          </button>
+        </div>
+        <div class="stack">
+          <div class="badge">Total semaine : <span id="totalWeek">0:00</span></div>
+          <div class="badge">Total km semaine : <span id="totalKmWeek">0</span> km</div>
+        </div>
+      </div>
     </div>
   </div>
-
-
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
