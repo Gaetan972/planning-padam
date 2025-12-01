@@ -472,17 +472,17 @@ select {
         font-size: 1rem;
     }
 
-    /* ---------- TOGGLE MOBILE : fermé = on ne voit que les horaires ---------- */
+    /* ---------- TOGGLE MOBILE : fermé = on voit Jour + Horaire(s) ---------- */
 
-    /* Par défaut : tout est visible (état ouvert, pas de classe) */
+    /* Par défaut : tout est visible (état ouvert) */
 
-    /* Quand la ligne a la classe .collapsed, on cache tout... */
+    /* Quand la ligne a la classe .collapsed, on cache tous les td... */
     .day-row.collapsed td {
         display: none;
     }
 
-    /* ...sauf Jour et Horaire(s) */
-    .day-row.collapsed td[data-label="Jour"],
+    /* ... sauf le 1er (Jour) et la cellule "Horaire(s)" */
+    .day-row.collapsed td:first-child,
     .day-row.collapsed td[data-label="Horaire(s)"] {
         display: block;
         border-top: none;
