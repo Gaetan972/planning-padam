@@ -46,13 +46,18 @@
       return cell.textContent.trim();
     }
 
-    // ----------- SET VALUE -----------
+    // ----------- SET VALUE (MODIFIÉ ICI) -----------
     function setCellValue(cell, value) {
       if (!cell) return;
       const input = cell.querySelector("input, select");
+
       if (input) {
         input.value = value ?? "";
-        input.dispatchEvent(new Event("change", { bubbles: true }));
+
+        const opts = { bubbles: true };
+        // On déclenche input + change pour que app.js mette à jour le state
+        input.dispatchEvent(new Event("input", opts));
+        input.dispatchEvent(new Event("change", opts));
       } else {
         cell.textContent = value ?? "";
       }
@@ -83,7 +88,7 @@
       const totalKmWeek = document.getElementById("totalKmWeek")?.textContent.trim() || "";
 
       return {
-        owner: "collegue",      // juste pour info, si tu veux filtrer plus tard
+        owner: "collegue",
         createdAt: new Date(),
         totals: { totalWeek, totalKmWeek },
         lignes,
