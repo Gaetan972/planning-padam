@@ -170,37 +170,18 @@ const TimeUtils = {
 
 
   // NOUVEAU : Configuration des optimisations tactiles
-  setupTouchOptimizations() {
-    // Empêcher les gestes de zoom accidentels
-    document.addEventListener('touchmove', (e) => {
-      if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') {
-        e.preventDefault();
-      }
-    }, { passive: false });
-
-    // Améliorer le responsive des menus déroulants
-    this.enhanceSelectMenus();
-  }
+ 
 
   // NOUVEAU : Injection du CSS pour le scroll fluide
  
 
   // NOUVEAU : Désactiver le zoom sur les inputs
-  disableInputZoom() {
-    const viewportMeta = document.querySelector('meta[name="viewport"]');
-    if (viewportMeta) {
-      viewportMeta.setAttribute('content', 
-        'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
-    }
-  }
+ 
 
   // NOUVEAU : Optimisations spécifiques mobile
  
   // NOUVEAU : Détection mobile
-  isMobile() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-           window.innerWidth <= 768;
-  }
+ 
 
   // NOUVEAU : Créer un indicateur de scroll
 
@@ -767,6 +748,7 @@ function getPlanningFromTable() {
     planning: planning
   };
 }
+
 
 
 
