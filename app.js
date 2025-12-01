@@ -205,13 +205,11 @@ class UIManager {
       'data-service-type': serviceType
     });
 
-    // Option vide avec emoji
     const optNone = this.createElement('option');
     optNone.value = "";
     optNone.textContent = '➕ Sélectionner';
     sel.appendChild(optNone);
 
-    // Grouper les services par catégorie
     const categories = {};
     SERVICES.forEach(service => {
       if (!categories[service.category]) {
@@ -280,7 +278,6 @@ class UIManager {
     this.totalWeekEl.textContent = TimeUtils.formatHHMM(totalWeek);
     this.totalKmWeekEl.textContent = totalKmWeek.toFixed(1);
 
-    // Animation de progression
     this.totalWeekEl.parentElement.classList.add('updated');
     setTimeout(() => this.totalWeekEl.parentElement.classList.remove('updated'), 1000);
   }
@@ -304,7 +301,6 @@ class PlanningApp {
     document.getElementById('btn-reset').addEventListener('click', () => this.resetWeek());
     document.getElementById('btn-export').addEventListener('click', () => this.exportCSV());
     
-    // Undo avec Ctrl+Z
     document.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
         e.preventDefault();
@@ -316,7 +312,6 @@ class PlanningApp {
   }
 
   setupKeyboardShortcuts() {
-    // Ajouter un indicateur de raccourcis
     const exportBtn = document.getElementById('btn-export');
     exportBtn.title = 'Exporter CSV (Ctrl+S)';
 
@@ -417,14 +412,15 @@ class PlanningApp {
     tdTime.textContent = TimeUtils.formatHHMM(totalTime);
     if (totalTime > 0) tdTime.classList.add('has-duration');
 
-    // Ajout des cellules
     [tdDay, tdN, tdS1, tdS2, tdH, tdD2, tdKm1, tdKm2, tdKmTot, tdTime].forEach(td => tr.appendChild(td));
 
-    // 🔽 Toggle mobile : clic sur la ligne = on alterne entre "tout" et "Jour + Horaire(s)"
-    if (this.ui.isMobile && this.ui.isMobile()) {
+    // 🔽 Toggle mobile : FERME PAR DÉFAUT, on voit seulement Jour + Horaire(s)
+    if (this.ui.isMobile()) {
+      tr.classList.add('collapsed');
+
       tr.addEventListener('click', (e) => {
         const tag = e.target.tagName;
-        // On ne toggle pas si on clique sur un input/select/bouton
+        // ne pas toggler quand on clique sur les champs
         if (tag === 'INPUT' || tag === 'SELECT' || tag === 'BUTTON') return;
         tr.classList.toggle('collapsed');
       });
@@ -503,7 +499,7 @@ class PlanningApp {
   }
 }
 
-// --- CSS additionnel (garde les petites animations, ne touche pas au scroll global) ---
+// --- CSS additionnel ---
 const additionalCSS = `
 /* Animations */
 @keyframes pulse {
