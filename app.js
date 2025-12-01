@@ -195,24 +195,7 @@ const TimeUtils = {
   }
 
   // NOUVEAU : Optimisations spécifiques mobile
-  optimizeMobileScroll() {
-    if (!this.isMobile()) return;
-
-    const tableContainer = document.querySelector('.table-container') || 
-                          document.querySelector('.card > div:first-child');
-    
-    if (tableContainer) {
-      // Ajouter la classe pour le scroll fluide
-      tableContainer.classList.add('smooth-scroll');
-      
-      // Créer un indicateur de scroll
-      this.createScrollIndicator(tableContainer);
-      
-      // Optimiser les événements de touch
-      this.optimizeTouchEvents(tableContainer);
-    }
-  }
-
+ 
   // NOUVEAU : Détection mobile
   isMobile() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
@@ -220,54 +203,10 @@ const TimeUtils = {
   }
 
   // NOUVEAU : Créer un indicateur de scroll
-  createScrollIndicator(container) {
-    const indicator = document.createElement('div');
-    indicator.className = 'scroll-indicator';
-    container.style.position = 'relative';
-    container.appendChild(indicator);
 
-    let hideTimeout;
-    const showIndicator = () => {
-      indicator.classList.add('visible');
-      clearTimeout(hideTimeout);
-      hideTimeout = setTimeout(() => {
-        indicator.classList.remove('visible');
-      }, 1500);
-    };
-
-    container.addEventListener('scroll', showIndicator);
-    container.addEventListener('touchstart', showIndicator);
-  }
 
   // NOUVEAU : Optimiser les événements tactiles
-  optimizeTouchEvents(container) {
-    let startY;
-    let isScrolling = false;
-
-    container.addEventListener('touchstart', (e) => {
-      startY = e.touches[0].clientY;
-      isScrolling = false;
-    }, { passive: true });
-
-    container.addEventListener('touchmove', (e) => {
-      if (!startY) return;
-      
-      const y = e.touches[0].clientY;
-      const diff = y - startY;
-      
-      if (Math.abs(diff) > 5) {
-        isScrolling = true;
-      }
-    }, { passive: true });
-
-    container.addEventListener('touchend', (e) => {
-      if (isScrolling) {
-        e.preventDefault();
-      }
-      startY = null;
-      isScrolling = false;
-    }, { passive: false });
-  }
+ 
 
   // NOUVEAU : Améliorer les menus déroulants sur mobile
   enhanceSelectMenus() {
@@ -828,6 +767,7 @@ function getPlanningFromTable() {
     planning: planning
   };
 }
+
 
 
 
