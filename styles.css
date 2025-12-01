@@ -1,160 +1,105 @@
 :root {
-    /* Palette principale */
-    --primary: #5c9c8b;
-    --primary-dark: #4a8a7a;
-    --primary-light: #6cac9b;
-    --bg: #fafafa;
-    --accent: #d53e5a;
-    --accent-dark: #c32e4a;
-    --accent-light: #e54e6a;
+/* Palette principale */
+--primary: #5c9c8b;
+--primary-dark: #4a8a7a;
+--primary-light: #6cac9b;
+--bg: #fafafa;
+--accent: #d53e5a;
+--accent-dark: #c32e4a;
+--accent-light: #e54e6a;
 
-    /* Dérivés modernes */
-    --text: #121417;
-    --text-light: #2d3748;
-    --muted: #64748b;
-    --muted-light: #94a3b8;
-    --card: #ffffff;
-    --border: rgba(18, 20, 23, 0.08);
-    --border-light: rgba(18, 20, 23, 0.04);
 
-    /* Ombres modernes */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+/* Dérivés modernes */
+--text: #121417;
+--text-light: #2d3748;
+--muted: #64748b;
+--muted-light: #94a3b8;
+--card: #ffffff;
+--border: rgba(18, 20, 23, 0.08);
+--border-light: rgba(18, 20, 23, 0.04);
 
-    /* Effets glassmorphism */
-    --glass: rgba(255, 255, 255, 0.25);
-    --glass-border: rgba(255, 255, 255, 0.18);
 
-    /* Animations */
-    --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-    --bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+/* Ombres modernes */
+--shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+--shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+--shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+--shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+
+/* Effets glassmorphism */
+--glass: rgba(255, 255, 255, 0.25);
+--glass-border: rgba(255, 255, 255, 0.18);
+
+
+/* Animations */
+--ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+--ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+--bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
-/* --------- Reset moderne --------- */
+
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+box-sizing: border-box;
+margin: 0;
+padding: 0;
 }
+
 
 html {
-    scroll-behavior: smooth;
+scroll-behavior: smooth;
 }
+
 
 body {
-    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-    color: var(--text);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    line-height: 1.6;
-    font-weight: 400;
+font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+color: var(--text);
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+min-height: 100vh;
+line-height: 1.6;
+font-weight: 400;
 }
 
-/* Fond avec effet de profondeur */
+
 body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background:
-        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
-    filter: blur(40px);
-    z-index: -2;
+content: "";
+position: fixed;
+inset: 0;
+background:
+radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
+radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+filter: blur(40px);
+z-index: -2;
 }
+
 
 body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background:
-        url("public/pexels-adrien-olichon-1257089-2387793.jpg") center/cover no-repeat;
-    filter: blur(8px) brightness(0.7) saturate(1.2);
-    transform: scale(1.02);
-    z-index: -1;
+content: "";
+position: fixed;
+inset: 0;
+background:
+url("public/pexels-adrien-olichon-1257089-2387793.jpg") center/cover no-repeat;
+filter: blur(8px) brightness(0.7) saturate(1.2);
+transform: scale(1.02);
+z-index: -1;
 }
 
-/* --------- Header moderne --------- */
+
 header {
-    padding: 3rem 1rem 1.5rem;
-    text-align: center;
-    animation: slideDown 0.8s var(--ease-out);
+padding: 3rem 1rem 1.5rem;
+text-align: center;
+animation: slideDown 0.8s var(--ease-out);
 }
+
 
 @keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+from {
+opacity: 0;
+transform: translateY(-30px);
 }
 
-h1 {
-    margin: 0 0 1rem;
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 800;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-}
 
-.muted {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: clamp(0.9rem, 2vw, 1.1rem);
-    font-weight: 400;
-    max-width: 500px;
-    margin: 0 auto;
-}
-
-/* --------- Layout / Card moderne --------- */
-.container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 1.5rem 3rem;
-    animation: fadeInUp 0.6s 0.2s both var(--ease-out);
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.card {
-    border-radius: 24px;
-    background: var(--glass);
-    backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--shadow-xl);
-    overflow: hidden;
-    transition: all 0.3s var(--ease-in-out);
-}
-
-.card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-xl), 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-}
-
-/* --------- Table moderne --------- */
-.table-container {
-    overflow: hidden;
-    border-radius: 20px 20px 0 0;
+to {
 }
 
 table {
@@ -544,4 +489,5 @@ select {
     background: linear-gradient(to right, #f6f7f8 8%, #edeef1 18%, #f6f7f8 33%);
     background-size: 800px 104px;
 }
+
 
