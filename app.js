@@ -420,12 +420,11 @@ class PlanningApp {
     // Ajout des cellules
     [tdDay, tdN, tdS1, tdS2, tdH, tdD2, tdKm1, tdKm2, tdKmTot, tdTime].forEach(td => tr.appendChild(td));
 
-    // 🔽 Toggle mobile : par défaut "fermé", on ne voit que les horaires
+    // 🔽 Toggle mobile : clic sur la ligne = on alterne entre "tout" et "Jour + Horaire(s)"
     if (this.ui.isMobile && this.ui.isMobile()) {
-      tr.classList.add('collapsed');
-
       tr.addEventListener('click', (e) => {
         const tag = e.target.tagName;
+        // On ne toggle pas si on clique sur un input/select/bouton
         if (tag === 'INPUT' || tag === 'SELECT' || tag === 'BUTTON') return;
         tr.classList.toggle('collapsed');
       });
@@ -589,7 +588,7 @@ const additionalCSS = `
 .service-select option[data-category="aprem"] { background: rgba(59, 130, 246, 0.1); }
 .service-select option[data-category="soir"] { background: rgba(139, 92, 246, 0.1); }
 .service-select option[data-category="nuit"] { background: rgba(30, 41, 59, 0.1); color: #1e293b; }
-service-select option[data-category="special"] { background: rgba(100, 116, 139, 0.1); }
+.service-select option[data-category="special"] { background: rgba(100, 116, 139, 0.1); }
 
 /* Lignes animées */
 .day-row {
@@ -633,11 +632,12 @@ service-select option[data-category="special"] { background: rgba(100, 116, 139,
     transition: all 0.2s ease;
   }
 
-  /* --- Toggle des lignes sur mobile : fermé = on ne voit que les horaires --- */
+  /* --- Toggle des lignes sur mobile : fermé = on voit Jour + Horaire(s) --- */
   .day-row.collapsed td {
     display: none;
   }
 
+  .day-row.collapsed td:first-child,
   .day-row.collapsed td[data-label="Horaire(s)"] {
     display: block;
     border-top: none;
