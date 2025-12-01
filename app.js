@@ -11,10 +11,6 @@ const CONFIG = {
     DEBOUNCE_DELAY: 1500,
     TOAST_DURATION: 3000
   },
-  SCROLL: {
-    SMOOTH: true,
-    MOBILE_OPTIMIZED: true
-  }
 };
 
 // --- Données services ---
@@ -187,101 +183,7 @@ const TimeUtils = {
   }
 
   // NOUVEAU : Injection du CSS pour le scroll fluide
-  injectSmoothScrollCSS() {
-    const scrollCSS = `
-      /* Scroll fluide pour tous les appareils */
-      .table-container {
-        -webkit-overflow-scrolling: touch !important;
-        /*scroll-behavior: smooth;*/
-        overflow-anchor: auto;
-      }
-
-      /* Optimisations mobiles pour le scroll */
-      @media (max-width: 768px) {
-        .table-container {
-        
-          overscroll-behavior: contain;
-          -webkit-overflow-scrolling: touch;
-        }
-
-       
-
-        /* Réduire la répaint pendant le scroll */
-        .card, table, tbody, tr, td {
-          transform: translateZ(0);
-          backface-visibility: hidden;
-          perspective: 1000;
-        }
-
-        /* Améliorer la performance du scroll */
-        tbody {
-          contain: layout style paint;
-        }
-      }
-
-      /* Désactiver le pull-to-refresh sur mobile */
-      body {
-        overscroll-behavior-y: contain;
-      }
-
-      /* Scrollbars personnalisées plus fines sur mobile */
-      .table-container::-webkit-scrollbar {
-        width: 4px;
-      }
-
-      .table-container::-webkit-scrollbar-thumb {
-        background: var(--primary);
-        border-radius: 2px;
-      }
-
-      .table-container::-webkit-scrollbar-track {
-        background: transparent;
-      }
-
-      /* Éviter les flashs blancs pendant le scroll sur iOS */
-      .table-container {
-        -webkit-tap-highlight-color: transparent;
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        user-select: none;
-      }
-
-      /* Réactiver la sélection pour les inputs */
-      .table-container input, 
-      .table-container select {
-        -webkit-user-select: text;
-        user-select: text;
-        -webkit-touch-callout: default;
-      }
-
-      /* Animation de scroll fluide */
-      .smooth-scroll {
-        scroll-behavior: smooth;
-      }
-
-      /* Indicateur de scroll pour mobile */
-      .scroll-indicator {
-        position: absolute;
-        bottom: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 40px;
-        height: 4px;
-        background: rgba(92, 156, 139, 0.3);
-        border-radius: 2px;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-      }
-
-      .scroll-indicator.visible {
-        opacity: 1;
-      }
-    `;
-
-    const style = document.createElement('style');
-    style.textContent = scrollCSS;
-    document.head.appendChild(style);
-  }
+ 
 
   // NOUVEAU : Désactiver le zoom sur les inputs
   disableInputZoom() {
@@ -926,6 +828,7 @@ function getPlanningFromTable() {
     planning: planning
   };
 }
+
 
 
 
