@@ -927,6 +927,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+function getPlanningFromTable() {
+  // Récupérer l'état actuel du planning depuis localStorage
+  const saved = localStorage.getItem(CONFIG.STORAGE.KEY);
+  const state = saved ? JSON.parse(saved) : {};
+
+  // Rassembler les jours de la semaine avec leurs données
+  const planning = Object.entries(state).map(([dayIndex, data]) => ({
+    dayIndex: Number(dayIndex),
+    nJour: data.nJour || null,
+    service1: data.service1 || null,
+    service2: data.service2 || null,
+    km1: data.km1 || 0,
+    km2: data.km2 || 0
+  }));
+
+  return {
+    createdAt: new Date().toISOString(),
+    planning: planning
+  };
+}
+
+
+
 
 
 
