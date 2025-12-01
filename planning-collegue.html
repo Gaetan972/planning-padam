@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Planning Padam – Collègue</title>
+
+  <!-- Même styles et même logique de planning -->
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+
+  <!-- Firebase + synchro spécifique collègue -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      getDocs,
+      query,
+      orderBy,
+      limit
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // Même projet Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyClXPPRZxQ-8j127IVJrKg2dePDbQ-93d4",
+      authDomain: "padam-846f8.firebaseapp.com",
+      projectId: "padam-846f8",
+      storageBucket: "padam-846f8.firebasestorage.app",
+      messagingSenderId: "201685233369",
+      appId: "1:201685233369:web:46f5b7c4ead892771a98c8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // 🔹 Collection séparée pour le collègue
+    const COLLECTION_NAME = "plannings_collegue";
+
+    // ----------- GET VALUE -----------
+    function getCellValue(cell) {
+      if (!cell) return "";
+      const input = cell.querySelector("input, select");
+      if (input) return input.value;
+      return cell.textContent.trim();
+    }
+
+    // ----------- SET VALUE -----------
+    function setCellValue(cell, value) {
+      if (!cell) return;
+      const input = cell.querySelector("input, select");
+      if (input) {
+        input.value = value ?? "";
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      } else {
+        cell.textContent = value ?? "";
+      }
+    }
+
+    // ----------- BUILD PLANNING OBJECT -----------
+    function getPlanningFromTable() {
+      const rows = Array.from(document.querySelectorAll("#tbody tr"));
+
+      const lignes = rows.map((row) => {
+        const cells = row.querySelectorAll("td");
+
+        return {
+          dayLabel: getCellValue(cells[0]),
+          dayNumber: getCellValue(cells[1]),
+          service1: getCellValue(cells[2]),
+          service2: getCellValue(cells[3]),
+          horaires: getCellValue(cells[4]),
+          duree2: getCellValue(cells[5]),
+          kmS1: Number(getCellValue(cells[6]) || 0),
+          kmS2: Number(getCellValue(cells[7]) || 0),
+          kmTotal: Number(getCellValue(cells[8]) || 0),
+          dureeTotal: getCellValue(cells[9]),
+        };
+      });
+
+      const totalWeek = document.getElementById("totalWeek")?.textContent.trim() || "";
+      const totalKmWeek = document.getElementById("totalKmWeek")?.textContent.trim() || "";
+
+      return {
+        owner: "collegue",      // juste pour info, si tu veux filtrer plus tard
+        createdAt: new Date(),
+        totals: { totalWeek, totalKmWeek },
+        lignes,
+      };
+    }
+
+    // ----------- APPLY PLANNING TO TABLE -----------
+    function applyPlanningToTable(planning) {
+      if (!planning || !planning.lignes) return;
+
+      const rows = Array.from(document.querySelectorAll("#tbody tr"));
+
+      planning.lignes.forEach((ligne, index) => {
+        const row = rows[index];
+        if (!row) return;
+
+        const cells = row.querySelectorAll("td");
+
+        setCellValue(cells[1], ligne.dayNumber);
+        setCellValue(cells[2], ligne.service1);
+        setCellValue(cells[3], ligne.service2);
+        setCellValue(cells[6], ligne.kmS1);
+        setCellValue(cells[7], ligne.kmS2);
+      });
+
+      console.log("Planning collègue appliqué au tableau");
+    }
+
+    // ----------- LOAD LAST PLANNING (COLLÈGUE) -----------
+    async function loadLastPlanning() {
+      try {
+        const q = query(
+          collection(db, COLLECTION_NAME),
+          orderBy("createdAt", "desc"),
+          limit(1)
+        );
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+          console.log("Aucun planning enregistré pour le collègue.");
+          return;
+        }
+
+        const latest = snap.docs[0].data();
+        console.log("Planning collègue chargé :", latest);
+        applyPlanningToTable(latest);
+
+      } catch (err) {
+        console.error("Erreur chargement planning collègue :", err);
+      }
+    }
+
+    // ----------- SAVE PLANNING (COLLÈGUE) -----------
+    async function savePlanning() {
+      try {
+        const data = getPlanningFromTable();
+        await addDoc(collection(db, COLLECTION_NAME), data);
+
+        alert("Planning collègue sauvegardé !");
+      } catch (err) {
+        console.error("Erreur sauvegarde collègue :", err);
+        alert("Erreur lors de l’enregistrement.");
+      }
+    }
+
+    // ----------- ON PAGE LOAD -----------
+    document.addEventListener("DOMContentLoaded", () => {
+      const btnSync = document.getElementById("btn-sync");
+      if (btnSync) {
+        btnSync.addEventListener("click", savePlanning);
+      }
+      loadLastPlanning();
+    });
+
+  </script>
+
+</head>
+<body>
+  <header>
+    <h1>Planning Padam – Collègue</h1>
+    <div class="muted">
+      Version dédiée à ton collègue.<br>
+      Choisis 1 ou 2 services par jour. Les horaires et durées se calculent automatiquement.
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <div style="overflow:auto; border-radius:14px 14px 0 0">
+        <table id="planning">
+          <thead>
+            <tr>
+              <th>Jour</th>
+              <th class="hide-sm">n du jour</th>
+              <th>Service 1</th>
+              <th>Service 2</th>
+              <th>Horaire(s)</th>
+              <th class="hide-sm">Durée 2</th>
+              <th>Km S1</th>
+              <th>Km S2</th>
+              <th>Km (total)</th>
+              <th class="right">Durée (total)</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="footer">
+        <div class="stack">
+          <button class="btn secondary" id="btn-reset" title="Effacer la semaine">
+            Réinitialiser
+          </button>
+          <button class="btn secondary" id="btn-export" title="Exporter au format CSV">
+            Exporter CSV
+          </button>
+          <button class="btn secondary" id="btn-sync" title="Enregistrer dans Firebase">
+            Synchroniser (collègue)
+          </button>
+        </div>
+        <div class="stack">
+          <div class="badge">
+            Total semaine : <span id="totalWeek">0:00</span>
+          </div>
+          <div class="badge">
+            Total km semaine : <span id="totalKmWeek">0</span> km
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
