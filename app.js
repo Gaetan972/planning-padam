@@ -171,28 +171,7 @@ const TimeUtils = {
 };
 
 // --- Gestionnaire d'UI AMÉLIORÉ avec scroll fluide ---
-class UIManager {
-  constructor() {
-    this.tbody = document.getElementById('tbody');
-    this.totalWeekEl = document.getElementById('totalWeek');
-    this.totalKmWeekEl = document.getElementById('totalKmWeek');
-    this.debounceTimers = new Map();
-    
-    this.initSmoothScroll();
-    this.setupTouchOptimizations();
-  }
 
-  // NOUVEAU : Initialisation du scroll fluide
-  initSmoothScroll() {
-    // Appliquer le CSS pour le scroll fluide
-    this.injectSmoothScrollCSS();
-    
-    // Désactiver le zoom sur les inputs pour éviter les sauts
-    this.disableInputZoom();
-    
-    // Optimiser le scroll sur mobile
-    this.optimizeMobileScroll();
-  }
 
   // NOUVEAU : Configuration des optimisations tactiles
   setupTouchOptimizations() {
@@ -947,6 +926,7 @@ function getPlanningFromTable() {
     planning: planning
   };
 }
+
 
 
 
