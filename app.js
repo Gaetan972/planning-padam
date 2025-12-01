@@ -11,6 +11,10 @@ const CONFIG = {
     DEBOUNCE_DELAY: 1500,
     TOAST_DURATION: 3000
   },
+  SCROLL: {
+    SMOOTH: true,
+    MOBILE_OPTIMIZED: true
+  }
 };
 
 // --- Données services ---
@@ -167,27 +171,222 @@ const TimeUtils = {
 };
 
 // --- Gestionnaire d'UI AMÉLIORÉ avec scroll fluide ---
+class UIManager {
+  constructor() {
+    this.tbody = document.getElementById('tbody');
+    this.totalWeekEl = document.getElementById('totalWeek');
+    this.totalKmWeekEl = document.getElementById('totalKmWeek');
+    this.debounceTimers = new Map();
+    
+    this.initSmoothScroll();
+    this.setupTouchOptimizations();
+  }
 
+  // NOUVEAU : Initialisation du scroll fluide
+  initSmoothScroll() {
+    // Appliquer le CSS pour le scroll fluide
+    this.injectSmoothScrollCSS();
+    
+    // Désactiver le zoom sur les inputs pour éviter les sauts
+    this.disableInputZoom();
+    
+    // Optimiser le scroll sur mobile
+    this.optimizeMobileScroll();
+  }
 
   // NOUVEAU : Configuration des optimisations tactiles
- 
+  setupTouchOptimizations() {
+    // Empêcher les gestes de zoom accidentels
+    document.addEventListener('touchmove', (e) => {
+      if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    // Améliorer le responsive des menus déroulants
+    this.enhanceSelectMenus();
+  }
 
   // NOUVEAU : Injection du CSS pour le scroll fluide
- 
+  injectSmoothScrollCSS() {
+    const scrollCSS = `
+      /* Scroll fluide pour tous les appareils */
+      .table-container {
+        -webkit-overflow-scrolling: touch !important;
+        /*scroll-behavior: smooth;*/
+        overflow-anchor: auto;
+      }
+
+      /* Optimisations mobiles pour le scroll */
+      @media (max-width: 768px) {
+        .table-container {
+        
+          overscroll-behavior: contain;
+          -webkit-overflow-scrolling: touch;
+        }
+
+       
+
+        /* Réduire la répaint pendant le scroll */
+        .card, table, tbody, tr, td {
+          transform: translateZ(0);
+          backface-visibility: hidden;
+          perspective: 1000;
+        }
+
+        /* Améliorer la performance du scroll */
+        tbody {
+          contain: layout style paint;
+        }
+      }
+
+      /* Désactiver le pull-to-refresh sur mobile */
+      body {
+        overscroll-behavior-y: contain;
+      }
+
+      /* Scrollbars personnalisées plus fines sur mobile */
+      .table-container::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      .table-container::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 2px;
+      }
+
+      .table-container::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      /* Éviter les flashs blancs pendant le scroll sur iOS */
+      .table-container {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      /* Réactiver la sélection pour les inputs */
+      .table-container input, 
+      .table-container select {
+        -webkit-user-select: text;
+        user-select: text;
+        -webkit-touch-callout: default;
+      }
+
+      /* Animation de scroll fluide */
+      .smooth-scroll {
+        scroll-behavior: smooth;
+      }
+
+      /* Indicateur de scroll pour mobile */
+      .scroll-indicator {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        background: rgba(92, 156, 139, 0.3);
+        border-radius: 2px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .scroll-indicator.visible {
+        opacity: 1;
+      }
+    `;
+
+    const style = document.createElement('style');
+    style.textContent = scrollCSS;
+    document.head.appendChild(style);
+  }
 
   // NOUVEAU : Désactiver le zoom sur les inputs
- 
+  disableInputZoom() {
+    const viewportMeta = document.querySelector('meta[name="viewport"]');
+    if (viewportMeta) {
+      viewportMeta.setAttribute('content', 
+        'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+    }
+  }
 
   // NOUVEAU : Optimisations spécifiques mobile
- 
+  optimizeMobileScroll() {
+    if (!this.isMobile()) return;
+
+    const tableContainer = document.querySelector('.table-container') || 
+                          document.querySelector('.card > div:first-child');
+    
+    if (tableContainer) {
+      // Ajouter la classe pour le scroll fluide
+      tableContainer.classList.add('smooth-scroll');
+      
+      // Créer un indicateur de scroll
+      this.createScrollIndicator(tableContainer);
+      
+      // Optimiser les événements de touch
+      this.optimizeTouchEvents(tableContainer);
+    }
+  }
+
   // NOUVEAU : Détection mobile
- 
+  isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+           window.innerWidth <= 768;
+  }
 
   // NOUVEAU : Créer un indicateur de scroll
+  createScrollIndicator(container) {
+    const indicator = document.createElement('div');
+    indicator.className = 'scroll-indicator';
+    container.style.position = 'relative';
+    container.appendChild(indicator);
 
+    let hideTimeout;
+    const showIndicator = () => {
+      indicator.classList.add('visible');
+      clearTimeout(hideTimeout);
+      hideTimeout = setTimeout(() => {
+        indicator.classList.remove('visible');
+      }, 1500);
+    };
+
+    container.addEventListener('scroll', showIndicator);
+    container.addEventListener('touchstart', showIndicator);
+  }
 
   // NOUVEAU : Optimiser les événements tactiles
- 
+  optimizeTouchEvents(container) {
+    let startY;
+    let isScrolling = false;
+
+    container.addEventListener('touchstart', (e) => {
+      startY = e.touches[0].clientY;
+      isScrolling = false;
+    }, { passive: true });
+
+    container.addEventListener('touchmove', (e) => {
+      if (!startY) return;
+      
+      const y = e.touches[0].clientY;
+      const diff = y - startY;
+      
+      if (Math.abs(diff) > 5) {
+        isScrolling = true;
+      }
+    }, { passive: true });
+
+    container.addEventListener('touchend', (e) => {
+      if (isScrolling) {
+        e.preventDefault();
+      }
+      startY = null;
+      isScrolling = false;
+    }, { passive: false });
+  }
 
   // NOUVEAU : Améliorer les menus déroulants sur mobile
   enhanceSelectMenus() {
@@ -748,10 +947,6 @@ function getPlanningFromTable() {
     planning: planning
   };
 }
-
-
-
-
 
 
 
