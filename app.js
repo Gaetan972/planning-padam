@@ -298,7 +298,6 @@ class PlanningApp {
     this.render();
     this.bindEvents();
     this.setupKeyboardShortcuts();
-    // Plus de setupScrollOptimizations ici
   }
 
   bindEvents() {
@@ -418,8 +417,21 @@ class PlanningApp {
     tdTime.textContent = TimeUtils.formatHHMM(totalTime);
     if (totalTime > 0) tdTime.classList.add('has-duration');
 
+    // Ajout des cellules
     [tdDay, tdN, tdS1, tdS2, tdH, tdD2, tdKm1, tdKm2, tdKmTot, tdTime].forEach(td => tr.appendChild(td));
-    
+
+    // 🔽 Toggle mobile : par défaut "fermé", on ne voit que les horaires
+    if (this.ui.isMobile && this.ui.isMobile()) {
+      tr.classList.add('collapsed');
+
+      tr.addEventListener('click', (e) => {
+        const tag = e.target.tagName;
+        if (tag === 'INPUT' || tag === 'SELECT' || tag === 'BUTTON') return;
+        tr.classList.toggle('collapsed');
+      });
+    }
+    // 🔼 Fin toggle mobile
+
     return tr;
   }
 
@@ -577,7 +589,7 @@ const additionalCSS = `
 .service-select option[data-category="aprem"] { background: rgba(59, 130, 246, 0.1); }
 .service-select option[data-category="soir"] { background: rgba(139, 92, 246, 0.1); }
 .service-select option[data-category="nuit"] { background: rgba(30, 41, 59, 0.1); color: #1e293b; }
-.service-select option[data-category="special"] { background: rgba(100, 116, 139, 0.1); }
+service-select option[data-category="special"] { background: rgba(100, 116, 139, 0.1); }
 
 /* Lignes animées */
 .day-row {
@@ -619,6 +631,36 @@ const additionalCSS = `
     background: rgba(92, 156, 139, 0.05) !important;
     transform: scale(1.01);
     transition: all 0.2s ease;
+  }
+
+  /* --- Toggle des lignes sur mobile : fermé = on ne voit que les horaires --- */
+  .day-row.collapsed td {
+    display: none;
+  }
+
+  .day-row.collapsed td[data-label="Horaire(s)"] {
+    display: block;
+    border-top: none;
+  }
+
+  /* Indicateur visuel de toggle sur la ligne "Horaire(s)" */
+  .day-row td[data-label="Horaire(s)"] {
+    position: relative;
+    padding-right: 2rem;
+  }
+
+  .day-row td[data-label="Horaire(s)"]::after {
+    content: "▼";
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .day-row.collapsed td[data-label="Horaire(s)"]::after {
+    content: "▶";
   }
 }
 `;
